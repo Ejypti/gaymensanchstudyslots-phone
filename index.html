@@ -1,0 +1,752 @@
+<!-- Save as index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gay Mens Anch Study Slots (Phone Version)</title>
+<style>
+body {
+  margin: 0;
+  font-family: 'Arial Black', sans-serif;
+  text-align: center;
+  background: url('GayMen-full.png') no-repeat center center fixed;
+  background-size: cover;
+}
+/* Remembered Cards */
+#rememberedCardsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  position: fixed;
+  top: 105px;
+  left: 10px;
+  z-index: 1500;
+}
+#rememberedCardsContainer img {
+  border-radius: 12px;
+  margin: 3px;
+  width: 50px;
+  height: 33px;
+  cursor: pointer;
+}
+
+/* Tooltip for hovered card */
+.card-tooltip {
+  position: absolute;
+  display: none;
+  z-index: 4000;
+  min-width: 180px;
+  max-width: 320px;
+  padding: 10px;
+  background: rgba(0,0,0,0.9);
+  color: #d9aa5c;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  font-size: 14px;
+  text-align: left;
+}
+.card-tooltip h4 {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+  color: #ffdfa3;
+}
+.card-tooltip p {
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+/* Play button inside tooltip */
+.card-tooltip .play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(217,170,92,0.12);
+  color: #d9aa5c;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.card-tooltip .play-btn:active { transform: scale(0.98); }
+
+/* Slot Machine */
+#slotMachine { display: flex; justify-content: center; margin: 20px auto; width: 300px; position: relative; }
+.reelContainer { width: 90px; height: 200px; margin: 0 5px; border: 1px solid #444; border-radius: 15px; overflow: hidden; background: rgba(255,255,255,0.1); position: relative; }
+.reel { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 45px; }
+.winHighlight { animation: flash 1s ease-in-out 3; }
+@keyframes flash { 50% { background-color: tan; } }
+/* Buttons */
+button { padding: 12px 25px; margin: 12px; font-size: 16px; cursor: pointer; border-radius: 15px; border: none; background: none; color: #d9aa5c; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; }
+button:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+/* Coins & Daily Bonus */
+#coins, #dailyBonus { font-size: 16px; margin: 10px auto; font-weight: bold; background: none; padding: 8px 15px; border-radius: 15px; width: fit-content; box-shadow: 0 3px 10px rgba(0,0,0,0.2); color: #d9aa5c; }
+/* Jackpot */
+#jackpotContainer { margin: 15px auto; width: 320px; height: 30px; border: 1px solid #444; border-radius: 20px; overflow: hidden; }
+#jackpotFill { height: 100%; width: 0%; background: linear-gradient(to right, #996633, #e2ab57, tan); border-radius: 20px; transition: width 0.8s ease-in-out; }
+#jackpotLabel { margin-top: 5px; font-weight: bold; color: #d9aa5c; }
+/* Fireworks */
+#fireworks { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+.spark { position: absolute; width: 8px; height: 8px; background: gold; border-radius: 50%; opacity: 0; }
+/* Bonus Round Overlay */
+#bonusOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); display:none; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; }
+.bonusCard { width: 150px; height: 100px; margin: 15px; perspective: 1000px; display: inline-block; cursor: pointer; transition: transform 0.8s ease, opacity 0.8s ease; position: relative; }
+.bonusCardInner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s ease; transform-style: preserve-3d; }
+.bonusCard.flipped .bonusCardInner { transform: rotateY(180deg); }
+.bonusCardFront, .bonusCardBack { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; display:flex; align-items:center; justify-content:center; font-size: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.bonusCardFront { background: #d9aa5c; }
+.bonusCardBack { transform: rotateY(180deg); background: none; }
+.bonusCardBack img { width: 100%; height: 100%; border-radius: 12px; object-fit: cover; }
+/* Spotlight effect */
+.bonusCard.spotlight {
+  position: absolute !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(3) !important;
+  z-index: 2000;
+}
+#bonusMessage { color: #d9aa5c; font-size: 18px; margin-top: 150px; }
+#resumeBtn { margin-top:0px; padding:10px 20px; font-size:18px; cursor:pointer; border:none; border-radius:12px; background: none; color:#d9aa5c; display:none; }
+#timer { color:#d9aa5c; font-size:18px; margin-top:300px; }
+/* Info Button */
+#infoButtonTopRight { position: fixed; top: 10px; right: 10px; z-index: 1000; }
+.info-button { background: none; color: #000000; border:none; font-weight:bold; cursor:pointer; font-size:18px; }
+.info-tooltip { visibility:hidden; width:175px; background: none; color:#d9aa5c; text-align:center; border-radius: 10px; padding:10px; position:absolute; z-index:101; top:40px; right:0; }
+#infoButtonTopRight:hover .info-tooltip { visibility: visible; }
+</style>
+</head>
+<body>
+
+<!-- Audio Elements (game sounds) -->
+<audio id="soundSpin" src="slotmachinespin.mp3" preload="auto"></audio>
+<audio id="soundCoins" src="coinspayout.mp3" preload="auto"></audio>
+<audio id="soundJackpot" src="jackpotpayout.mp3" preload="auto"></audio>
+<audio id="soundSelect" src="bookpageselect.mp3" preload="auto"></audio>
+
+<!-- Welcome audio added per request -->
+<audio id="welcomeAudio" src="welcomebyjared.M4A" preload="auto"></audio>
+
+<!-- Audio elements for each book page (one per page) -->
+<!-- IDs follow pattern: audio-bookpage1 ... audio-bookpage21 -->
+<audio id="audio-bookpage1" src="bookpage1.M4A" preload="auto"></audio>
+<audio id="audio-bookpage2" src="bookpage2.M4A" preload="auto"></audio>
+<audio id="audio-bookpage3" src="bookpage3.M4A" preload="auto"></audio>
+<audio id="audio-bookpage4" src="bookpage4.M4A" preload="auto"></audio>
+<audio id="audio-bookpage5" src="bookpage5.M4A" preload="auto"></audio>
+<audio id="audio-bookpage6" src="bookpage6.M4A" preload="auto"></audio>
+<audio id="audio-bookpage7" src="bookpage7.M4A" preload="auto"></audio>
+<audio id="audio-bookpage8" src="bookpage8.M4A" preload="auto"></audio>
+<audio id="audio-bookpage9" src="bookpage9.M4A" preload="auto"></audio>
+<audio id="audio-bookpage10" src="bookpage10.M4A" preload="auto"></audio>
+<audio id="audio-bookpage11" src="bookpage11.M4A" preload="auto"></audio>
+<audio id="audio-bookpage12" src="bookpage12.M4A" preload="auto"></audio>
+<audio id="audio-bookpage13" src="bookpage13.M4A" preload="auto"></audio>
+<audio id="audio-bookpage14" src="bookpage14.M4A" preload="auto"></audio>
+<audio id="audio-bookpage15" src="bookpage15.M4A" preload="auto"></audio>
+<audio id="audio-bookpage16" src="bookpage16.M4A" preload="auto"></audio>
+<audio id="audio-bookpage17" src="bookpage17.M4A" preload="auto"></audio>
+<audio id="audio-bookpage18" src="bookpage18.M4A" preload="auto"></audio>
+<audio id="audio-bookpage19" src="bookpage19.M4A" preload="auto"></audio>
+<audio id="audio-bookpage20" src="bookpage20.M4A" preload="auto"></audio>
+<audio id="audio-bookpage21" src="bookpage21.M4A" preload="auto"></audio>
+
+<!-- Image Banner at Top -->
+<div id="topImages" style="display:flex; justify-content:left; flex-wrap:wrap; margin-top:10px; margin-left:10px;  margin-bottom:10px;">
+  <img src="G-50x75.png" width="25" height="38" alt="G">
+  <img src="A-50x75.png" width="25" height="38" alt="A">
+  <img src="Y-50x75.png" width="25" height="38" alt="Y">
+  <img src="blank.png" width="10" height="38" alt="">
+  <img src="M-50x75.png" width="25" height="38" alt="M">
+  <img src="E-50x75.png" width="25" height="38" alt="E">
+  <img src="N-50x75.png" width="25" height="38" alt="N">
+  <img src="S-50x75.png" width="25" height="38" alt="S">
+  <img src="blank.png" width="10" height="38" alt="">
+  <img src="A-50x75.png" width="25" height="38" alt="A">
+  <img src="N-50x75.png" width="25" height="38" alt="N">
+  <img src="C-50x75.png" width="25" height="38" alt="C">
+  <img src="H-50x75.png" width="25" height="38" alt="H">
+</div>
+
+<!-- Image Banner at Top -->
+<div id="topImages2" style="display:flex; justify-content:left; flex-wrap:wrap; margin-top:10px; margin-left:10px;  margin-bottom:10px;">
+  <img src="S-50x75.png" width="25" height="38" alt="S">
+  <img src="T-50x75.png" width="25" height="38" alt="T">
+  <img src="U-50x75.png" width="25" height="38" alt="U">
+  <img src="D-50x75.png" width="25" height="38" alt="D">
+  <img src="Y-50x75.png" width="25" height="38" alt="Y">
+  <img src="blank.png" width="10" height="38" alt="">
+  <img src="S-50x75.png" width="25" height="38" alt="S">
+  <img src="L-50x75.png" width="25" height="38" alt="L">
+  <img src="O-50x75.png" width="25" height="38" alt="O">
+  <img src="T-50x75.png" width="25" height="38" alt="T">
+  <img src="S-50x75.png" width="25" height="38" alt="S">
+</div>
+
+<!-- Info Button -->
+<div id="infoButtonTopRight">
+  <button class="info-button" aria-haspopup="true" aria-expanded="false">i</button>
+  <div class="info-tooltip" role="tooltip">
+    <strong>Symbols & Payouts:</strong><br>
+    🍒🍒🍒 - 50<br>
+    🍋🍋🍋 - 40<br>
+    🍊🍊🍊 - 30<br>
+    🍇🍇🍇 - 20<br>
+    ⭐️⭐️⭐️ - 100
+  </div>
+</div>
+
+<!-- Remembered Selected Cards (Top Left) -->
+<div id="rememberedCardsContainer" aria-live="polite"></div>
+
+<!-- Tooltip element for hovered cards -->
+<div id="cardTooltip" class="card-tooltip" role="dialog" aria-hidden="true"></div>
+
+  <img src="blank.png" width="10" height="30" alt="">
+<div id="slotMachine">
+  <div class="reelContainer"><div class="reel" id="reel1"></div></div>
+  <div class="reelContainer"><div class="reel" id="reel2"></div></div>
+  <div class="reelContainer"><div class="reel" id="reel3"></div></div>
+  <div id="fireworks" aria-hidden="true"></div>
+</div>
+
+<div id="coins" aria-live="polite">💰 Coins: 20</div>
+<div id="dailyBonus" aria-live="polite"></div>
+
+<div id="jackpotContainer"><div id="jackpotFill"></div></div>
+<div id="jackpotLabel">Jackpot: 0%</div>
+
+<button onclick="spin()">Spin</button>
+<button id="autoplayBtn" aria-pressed="false">Autoplay 10 Spins</button>
+<div id="result" role="status" aria-live="polite"></div>
+
+<div id="bonusOverlay" role="dialog" aria-hidden="true">
+  <div id="bonusMessage">Pick a Card to Reveal Your Book Page!</div>
+  <div id="bonusCards" aria-live="polite"></div>
+  <div id="timer" aria-live="polite"></div>
+  <button id="resumeBtn" onclick="endBonusRound()">Resume Study</button>
+</div>
+
+<script>
+/* -------------------------
+   Original game variables
+   ------------------------- */
+const symbols = ["🍒","🍋","🍊","🍇","⭐️"];
+let coins = parseInt(localStorage.getItem("coins")) || 20;
+let jackpotProgress = parseInt(localStorage.getItem("jackpotProgress")) || 0;
+const jackpotStep = 10;
+const jackpotReward = 200;
+let autoplayActive = false;
+let autoplayCount = 10;
+let spinning = false;
+let bonusCountdown;
+let rememberedCards = JSON.parse(localStorage.getItem("rememberedCards")) || [];
+let jackpotReachedThisSpin = false;
+
+/* Tooltip hover tracking flags */
+let tooltipHover = false;
+let hoveringCardElement = null;
+
+/* -------------------------
+   Helper: extract base name
+   ------------------------- */
+function filenameBase(imgSrc) {
+  if(!imgSrc) return "";
+  // handle absolute URLs; remove querystring/hash
+  const parts = imgSrc.split('/').pop().split('?')[0].split('#')[0];
+  return parts.replace(/\.[^.]+$/, '');
+}
+
+/* -------------------------
+   Play sounds (existing)
+   ------------------------- */
+function playSound(id) {
+  const sound = document.getElementById(id);
+  if (sound) {
+    try {
+      sound.currentTime = 0;
+    } catch(e){}
+    sound.play().catch(()=>{});
+  }
+}
+
+/* -------------------------
+   Welcome audio logic (plays on load or on first user interaction / first spin)
+   ------------------------- */
+let welcomePlayed = false;
+function playWelcomeOnce() {
+  if (welcomePlayed) return;
+  const wa = document.getElementById('welcomeAudio');
+  if (!wa) { welcomePlayed = true; return; }
+  try { wa.currentTime = 0; } catch(e){}
+  wa.play().then(() => {
+    welcomePlayed = true;
+  }).catch(() => {
+    // autoplay blocked. Wait for first user gesture.
+    const onceHandler = () => {
+      try { wa.currentTime = 0; } catch(e){}
+      wa.play().catch(()=>{});
+      welcomePlayed = true;
+      // listeners added with { once: true } will auto-remove
+    };
+    window.addEventListener('click', onceHandler, { once: true, passive: true });
+    window.addEventListener('keydown', onceHandler, { once: true, passive: true });
+    window.addEventListener('touchstart', onceHandler, { once: true, passive: true });
+  });
+}
+
+/* -------------------------
+   Tooltip logic for cards
+   ------------------------- */
+const tooltip = document.getElementById('cardTooltip');
+
+// Simple generated descriptions for pages 1..21. You can replace these with richer text.
+const pageDescriptions = {
+  1: "ACENACTE — Arch spirit studies.",
+  2: "LIZER — Literature.",
+  3: "ANCH — Ejypti health studies.",
+  4: "ANCHRELL — Wishing for somemore time with a person.",
+  5: "ANIKTO — Open.",
+  6: "AQKANOX — Water.",
+  7: "GYMFOLTANAU — Fit and chizzled.",
+  8: "RAVANU — New day.",
+  9: "SAHEDRON — O3 Crystalized Ice.",
+  10: "SUNFLOWERMAN — A gay Ejypti man that requires O3.",
+  11: "UMBRAL — Device (Water).",
+  12: "PLUMPULSE — Water flow.",
+  13: "HYDRALINE — Water line access with on button.",
+  14: "HYDROMALOXALINE — Air in water to filter freshness of water.",
+  15: "LITRICANE IMX VALVUE — Zero Sugar molecule with carbonization.",
+  16: "FARANITE — Frosted water from atmosphere over ocean.",
+  17: "HISBAND — Gay men union.",
+  18: "JJRE — My name Jared in Ejypti.",
+  19: "Emtricitabine — PrEP for gay men.",
+  20: "Sildenafil — Mens erection medicine.",
+  21: "Extermi Spermi (copyrighted) — by me Jared Reynolds."
+};
+
+// Use a single play handler to avoid multiple listeners stacking
+let currentPlayTargetAudioId = null;
+
+function buildTooltipHtml(title, desc, audioDataAttr) {
+  return `
+    <h4>${title}</h4>
+    <p>${desc}</p>
+    <div>
+      <button class="play-btn" data-audio="${audioDataAttr}">► Play Audio</button>
+      <span style="margin-left:10px; font-size:12px; color:#bfa06b;"></span>
+    </div>
+  `;
+}
+
+function showCardTooltip(imgSrc, anchorRect) {
+  const base = filenameBase(imgSrc); // e.g., "bookpage1"
+  const match = base.match(/bookpage(\d+)/i);
+  let title = base;
+  let desc = "No description available.";
+  let pageNum = null;
+  if (match) {
+    pageNum = parseInt(match[1], 10);
+    title = `Book Page ${pageNum}`;
+    desc = pageDescriptions[pageNum] || `Book Page ${pageNum}`;
+  } else {
+    title = base;
+    desc = "Book page audio available.";
+  }
+
+  // Build tooltip HTML
+  const audioId = `audio-${base}`;
+  tooltip.innerHTML = buildTooltipHtml(title, desc, audioId);
+
+  // Make visible off-screen for measurement then position properly
+  tooltip.style.display = 'block';
+  tooltip.style.opacity = '0';
+  tooltip.style.left = '0px';
+  tooltip.style.top = '0px';
+  tooltip.setAttribute('aria-hidden', 'false');
+
+  // Measure and position
+  const tooltipRect = tooltip.getBoundingClientRect();
+  // prefer above anchorRect
+  let top = anchorRect.top - tooltipRect.height - 10;
+  let left = anchorRect.left + (anchorRect.width/2) - (tooltipRect.width/2);
+
+  if (top < 8) {
+    top = anchorRect.bottom + 10;
+  }
+  left = Math.max(8, Math.min(left, window.innerWidth - tooltipRect.width - 8));
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+  tooltip.style.opacity = '1';
+
+  // Attach click handler safely (only one)
+  const playBtn = tooltip.querySelector('.play-btn');
+  if (playBtn) {
+    playBtn.onclick = (e) => {
+      const audioIdLocal = playBtn.dataset.audio;
+      stopAllBookAudios();
+      playSound(audioIdLocal);
+    };
+  }
+}
+
+function hideCardTooltip() {
+  tooltip.style.display = 'none';
+  tooltip.setAttribute('aria-hidden', 'true');
+  tooltip.innerHTML = '';
+  stopAllBookAudios();
+  tooltipHover = false;
+  tooltip.dataset.for = '';
+}
+
+// ensure tooltip hover state is tracked
+tooltip.addEventListener('mouseenter', () => {
+  tooltipHover = true;
+});
+tooltip.addEventListener('mouseleave', () => {
+  tooltipHover = false;
+  // small timeout to allow quick moves back to card
+  setTimeout(() => {
+    if (!tooltipHover && !hoveringCardElement) hideCardTooltip();
+  }, 50);
+});
+
+function stopAllBookAudios() {
+  for (let i = 1; i <= 21; i++) {
+    const a = document.getElementById(`audio-bookpage${i}`);
+    if (a && !a.paused) {
+      try { a.pause(); a.currentTime = 0; } catch(e){}
+    }
+  }
+}
+
+/* -------------------------
+   Display remembered cards
+   ------------------------- */
+function displayRememberedCards(){
+  const container = document.getElementById("rememberedCardsContainer");
+  container.innerHTML = "";
+  const latestCards = rememberedCards.slice(-10);
+  latestCards.forEach(imgSrc=>{
+    const img = document.createElement("img");
+    img.src = imgSrc;
+    const base = filenameBase(imgSrc); // "bookpage1"
+    img.dataset.basename = base;
+
+    // Mouse enter: show tooltip and mark hovering
+    img.addEventListener('mouseenter', (e) => {
+      hoveringCardElement = img;
+      const rect = img.getBoundingClientRect();
+      showCardTooltip(img.src, rect);
+      tooltip.dataset.for = img.dataset.basename;
+    });
+    // Mouse leave: clear hovering flag; hide only if not hovering tooltip or another card
+    img.addEventListener('mouseleave', (e) => {
+      // clear hoveringCardElement after a tiny delay to handle moving into tooltip
+      hoveringCardElement = null;
+      setTimeout(() => {
+        if (!tooltipHover && !hoveringCardElement) hideCardTooltip();
+      }, 50);
+    });
+
+    // Click toggles tooltip (mobile friendly)
+    img.addEventListener('click', (e) => {
+      const rect = img.getBoundingClientRect();
+      if (tooltip.style.display === 'block' && tooltip.dataset.for === img.dataset.basename) {
+        hideCardTooltip();
+      } else {
+        hoveringCardElement = img;
+        showCardTooltip(img.src, rect);
+        tooltip.dataset.for = img.dataset.basename;
+      }
+    });
+
+    container.appendChild(img);
+  });
+}
+
+function tooltipMouseLeaveOnce(e) {
+  hideCardTooltip();
+  tooltip.removeEventListener('mouseleave', tooltipMouseLeaveOnce);
+}
+
+/* -------------------------
+   Daily Bonus
+   ------------------------- */
+function checkDailyBonus(){
+  const today = new Date().toDateString();
+  const lastClaim = localStorage.getItem("lastBonus") || "";
+  if(today !== lastClaim){
+    const bonusCoins = 10 + Math.floor(Math.random()*20);
+    coins += bonusCoins;
+    localStorage.setItem("lastBonus", today);
+    document.getElementById("dailyBonus").textContent = `🎁 Daily Bonus! +${bonusCoins} Coins`;
+    saveGame();
+    updateCoins();
+  } else {
+    document.getElementById("dailyBonus").textContent = "Daily Bonus Already Claimed";
+  }
+}
+
+function updateCoins(){document.getElementById("coins").textContent="💰 Coins: "+coins;}
+function updateJackpot(){document.getElementById("jackpotFill").style.width=jackpotProgress+"%";document.getElementById("jackpotLabel").textContent="Jackpot: "+jackpotProgress+"%";}
+function saveGame(){localStorage.setItem("coins", coins);localStorage.setItem("jackpotProgress", jackpotProgress);localStorage.setItem("rememberedCards", JSON.stringify(rememberedCards));}
+
+/* -------------------------
+   Spin
+   ------------------------- */
+function spin(){
+  // Ensure welcome audio plays at the start of gameplay if it hasn't already
+  playWelcomeOnce();
+
+  if(coins<=0){document.getElementById("result").textContent="❌ No coins left!"; autoplayActive=false; return;}
+  if(autoplayActive && spinning) return;
+  spinning = true;
+  coins -= 1; saveGame(); updateCoins();
+  document.getElementById("result").textContent="Spinning...";
+  playSound("soundSpin"); // 🎰 spin sound
+
+  jackpotProgress += jackpotStep;
+  if(jackpotProgress >= 100){
+    jackpotProgress = 100;
+    jackpotReachedThisSpin = true;
+  }
+  updateJackpot();
+
+  const reels=[document.getElementById("reel1"),document.getElementById("reel2"),document.getElementById("reel3")];
+  let stopped=0;
+  reels.forEach((reel,index)=>{
+    const spinCount=20+index*10+Math.floor(Math.random()*10);
+    let pos=0; let delay=50;
+    const interval=setInterval(()=>{
+      reel.innerHTML=`${symbols[pos%symbols.length]}<br>${symbols[(pos+1)%symbols.length]}<br>${symbols[(pos+2)%symbols.length]}`;
+      pos++;
+      if(pos>spinCount){
+        clearInterval(interval);
+        stopped++;
+        if(stopped===3){
+          setTimeout(()=>{ 
+            if(jackpotReachedThisSpin){
+              coins += jackpotReward;
+              updateCoins();
+              saveGame();
+              document.getElementById("result").textContent = ` JACKPOT! +${jackpotReward} coins! `;
+              autoplayActive = false;
+              triggerFireworks();
+              playSound("soundJackpot"); // 🎉 jackpot sound
+              startBonusRound();
+              setTimeout(() => {
+                jackpotProgress = 0;
+                updateJackpot();
+                saveGame();
+                jackpotReachedThisSpin = false;
+              }, 1500);
+              spinning = false;
+              return;
+            }
+            checkWin();
+            spinning = false;
+            if(autoplayActive && autoplayCount>0){
+              autoplayCount--;
+              setTimeout(() => { spin(); }, 350);
+            } else {
+              autoplayActive=false;
+              document.getElementById("autoplayBtn").textContent = "Autoplay 10 Spins";
+              document.getElementById("autoplayBtn").setAttribute("aria-pressed","false");
+            }
+          },400);
+        }
+      }
+      delay+=1;
+    },delay);
+  });
+}
+
+/* -------------------------
+   Check Win
+   ------------------------- */
+function checkWin(){
+  const r1=document.getElementById("reel1").innerHTML.split("<br>");
+  const r2=document.getElementById("reel2").innerHTML.split("<br>");
+  const r3=document.getElementById("reel3").innerHTML.split("<br>");
+  const rows=[[r1[0],r2[0],r3[0]],[r1[1],r2[1],r3[1]],[r1[2],r2[2],r3[2]]];
+  const payouts={"🍒":50,"🍋":40,"🍊":30,"🍇":20,"⭐️":100};
+  let totalWin=0;
+  rows.forEach(row=>{
+    if(row[0]===row[1]&&row[1]===row[2]){
+      if(payouts[row[0]] !== undefined) totalWin+=payouts[row[0]];
+    }
+  });
+  if(totalWin>0){
+    coins+=totalWin;
+    updateCoins();
+    saveGame();
+    document.getElementById("result").textContent=` Win ${totalWin} coins! `;
+    playSound("soundCoins"); // 💰 coins payout
+    if(coins>=5000){ startBonusRound(); }
+  } else {
+    if(!document.getElementById("result").textContent.includes("JACKPOT")){
+      document.getElementById("result").textContent="Try again!";
+    }
+  }
+  saveGame();
+}
+
+/* -------------------------
+   Fireworks
+   ------------------------- */
+function triggerFireworks(){
+  const fw=document.getElementById("fireworks");
+  fw.innerHTML="";
+  for(let i=0;i<20;i++){
+    const s=document.createElement("div");
+    s.className="spark"; s.style.left="50%"; s.style.top="50%";
+    fw.appendChild(s);
+    const angle=Math.random()*2*Math.PI;
+    const dist=100+Math.random()*100;
+    s.animate([{transform:"translate(0,0)",opacity:1},{transform:`translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px)`,opacity:0}],{duration:1000,fill:"forwards"});
+  }
+}
+
+/* -------------------------
+   Autoplay
+   ------------------------- */
+document.getElementById("autoplayBtn").addEventListener("click",()=>{
+  if(autoplayActive){
+    autoplayActive=false;
+    document.getElementById("autoplayBtn").textContent = "Autoplay 10 Spins";
+    document.getElementById("autoplayBtn").setAttribute("aria-pressed","false");
+  } else {
+    autoplayActive=true;
+    autoplayCount=10;
+    document.getElementById("autoplayBtn").textContent = "Stop Autoplay";
+    document.getElementById("autoplayBtn").setAttribute("aria-pressed","true");
+    if(!spinning) spin();
+  }
+});
+
+/* -------------------------
+   Bonus Round & remembered card animation
+   ------------------------- */
+const bookImages=["bookpage1.png","bookpage2.png","bookpage3.png","bookpage4.png","bookpage5.png","bookpage6.png","bookpage7.png","bookpage8.png","bookpage9.png","bookpage10.png","bookpage11.png","bookpage12.png","bookpage13.png","bookpage14.png","bookpage15.png","bookpage16.png","bookpage17.png","bookpage18.png","bookpage19.png","bookpage20.png","bookpage21.png"];
+
+function startBonusRound(){
+  autoplayActive = false;
+  document.getElementById("autoplayBtn").textContent = "Autoplay 10 Spins";
+  document.getElementById("autoplayBtn").setAttribute("aria-pressed","false");
+  document.getElementById("bonusOverlay").style.display="flex";
+  document.getElementById("bonusOverlay").setAttribute("aria-hidden", "false");
+  const bonusCards=document.getElementById("bonusCards");
+  bonusCards.innerHTML="";
+  const choices=bookImages.slice().sort(()=>0.5-Math.random()).slice(0,3);
+  choices.forEach(img=>{
+    const card=document.createElement("div");
+    card.className="bonusCard";
+    card.innerHTML=`<div class="bonusCardInner"><div class="bonusCardFront">❓</div><div class="bonusCardBack"><img src="${img}" alt="Page"></div></div>`;
+    // Add hover on the back image to show tooltip and play audio
+    card.addEventListener("mouseenter", (e) => {
+      hoveringCardElement = card;
+      const backImg = card.querySelector('.bonusCardBack img');
+      if (backImg) showCardTooltip(backImg.src, backImg.getBoundingClientRect());
+      // mark tooltip "for" so clicking/touch behavior matches
+      const base = filenameBase(backImg ? backImg.src : '');
+      if (base) tooltip.dataset.for = base;
+    });
+    card.addEventListener("mouseleave", (e) => {
+      hoveringCardElement = null;
+      setTimeout(() => {
+        if (!tooltipHover && !hoveringCardElement) hideCardTooltip();
+      }, 50);
+    });
+    card.addEventListener("click",()=>selectCard(card));
+    bonusCards.appendChild(card);
+  });
+}
+
+// Animate card fly and add to remembered
+function flyCardToRemembered(card, cardImgSrc) {
+  const flyImg = document.createElement("img");
+  flyImg.src = cardImgSrc;
+  flyImg.style.width = "100px";
+  flyImg.style.height = "66px";
+  flyImg.style.position = "absolute";
+  flyImg.style.borderRadius = "12px";
+  flyImg.style.zIndex = "3000";
+  const rect = card.getBoundingClientRect();
+  flyImg.style.top = rect.top + "px";
+  flyImg.style.left = rect.left + "px";
+  document.body.appendChild(flyImg);
+  const container = document.getElementById("rememberedCardsContainer");
+  const containerRect = container.getBoundingClientRect();
+  const targetX = containerRect.left + (containerRect.width/2) - 25; // center-ish
+  const targetY = containerRect.top;
+  flyImg.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 },{ transform: `translate(${targetX - rect.left}px, ${targetY - rect.top}px) scale(0.5)`, opacity: 0.5 }],{ duration: 1000, fill: "forwards" }).onfinish = () => {
+    flyImg.remove();
+    // store relative path like "bookpage1.png" so filenameBase works consistently
+    const fileName = cardImgSrc.split('/').pop();
+    if (!rememberedCards.includes(fileName)) {
+      rememberedCards.push(fileName);
+    }
+    if (rememberedCards.length > 10) {
+      rememberedCards = rememberedCards.slice(-10);
+    }
+    saveGame();
+    displayRememberedCards();
+  };
+}
+
+function selectCard(card){
+  if(card.classList.contains("flipped")) return;
+  const imgElement = card.querySelector(".bonusCardBack img");
+  const imgSrc = imgElement ? imgElement.src : "";
+  card.classList.add("flipped","spotlight");
+  flyCardToRemembered(card, imgSrc);
+  playSound("soundSelect"); // 📖 select card
+  document.querySelectorAll(".bonusCard").forEach(c=>{
+    if(c!==card){ c.style.opacity="0"; setTimeout(()=>c.style.display="none",800); }
+  });
+  clearInterval(bonusCountdown);
+  let timeLeft=60;
+  document.getElementById("timer").textContent=`⏳ ${timeLeft}s`;
+  bonusCountdown=setInterval(()=>{
+    timeLeft--;
+    document.getElementById("timer").textContent=`⏳ ${timeLeft}s`;
+    if(timeLeft<=0){ clearInterval(bonusCountdown); endBonusRound(); }
+  },1000);
+  document.getElementById("resumeBtn").style.display="block";
+}
+
+function endBonusRound(){
+  document.getElementById("bonusOverlay").style.display="none";
+  document.getElementById("bonusOverlay").setAttribute("aria-hidden", "true");
+  document.getElementById("resumeBtn").style.display="none";
+  document.getElementById("timer").textContent="";
+  document.getElementById("bonusCards").innerHTML="";
+}
+
+/* -------------------------
+   Init
+   ------------------------- */
+updateCoins(); updateJackpot(); checkDailyBonus(); displayRememberedCards();
+// Attempt to play welcome audio now (or on first interaction if blocked)
+playWelcomeOnce();
+
+/* -------------------------
+   Accessibility: hide tooltip on scroll or resize
+   ------------------------- */
+window.addEventListener('scroll', () => {
+  // hide tooltip immediately on scroll to avoid floating UI
+  hoveringCardElement = null;
+  hideCardTooltip();
+});
+window.addEventListener('resize', () => {
+  hoveringCardElement = null;
+  hideCardTooltip();
+});
+document.addEventListener('keydown', (e) => {
+  // close tooltip on Escape
+  if (e.key === 'Escape') hideCardTooltip();
+});
+</script>
+</body>
+</html>
