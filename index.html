@@ -427,7 +427,7 @@ function stopAllBookAudios() {
 function displayRememberedCards(){
   const container = document.getElementById("rememberedCardsContainer");
   container.innerHTML = "";
-  const latestCards = rememberedCards.slice(-10);
+  const latestCards = rememberedCards.slice(-5);
   latestCards.forEach(imgSrc=>{
     const img = document.createElement("img");
     img.src = imgSrc;
